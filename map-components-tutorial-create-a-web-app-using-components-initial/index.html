@@ -1,25 +1,50 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" href="data:;base64,=" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ArcGIS Maps SDK for JavaScript Tutorials: Create a web app using components</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no" />
+
+    <title>LayerList component</title>
+
+    <!-- Load Calcite components from CDN -->
+    <link rel="stylesheet" type="text/css" href="https://js.arcgis.com/calcite-components/2.13.2/calcite.css" />
+    <script type="module" src="https://js.arcgis.com/calcite-components/2.13.2/calcite.esm.js"></script>
+
+    <!-- Load the ArcGIS Maps SDK for JavaScript from CDN -->
+    <link rel="stylesheet" href="https://js.arcgis.com/4.31/esri/themes/light/main.css" />
+    <script src="https://js.arcgis.com/4.31/"></script>
+
+    <!-- Load Map components from CDN-->
+    <script
+      type="module"
+      src="https://js.arcgis.com/map-components/4.31/arcgis-map-components.esm.js"
+    ></script>
   </head>
 
   <body>
 
-    <calcite-shell>
-      <calcite-navigation slot="header">
-        <calcite-navigation-logo slot="logo"></calcite-navigation-logo>
-      </calcite-navigation>
-      <arcgis-map item-id="771f3cb7e7b14894aaf3ce0747b53cec" zoom="4">
-        <arcgis-layer-list position="top-right"></arcgis-layer-list>
-      </arcgis-map>
-     
-    </calcite-shell>
+    <arcgis-map item-id="e91886a36d5e4f18a5f35c9351120229"  center="55, 35" zoom="4">
+         <!--  iran item-id="771f3cb7e7b14894aaf3ce0747b53cec"-->
+      <arcgis-home position="top-left"> </arcgis-home>
 
+      <arcgis-zoom position="top-left"></arcgis-zoom>
+
+      <arcgis-search position="top-left"></arcgis-search>
+
+      
+      <arcgis-layer-list drag-enabled=true position="top-left" show-collapse-button show-heading></arcgis-layer-list>
+      
+
+      <arcgis-scale-bar position="bottom-left" bar-style="line"   unit="metric"></arcgis-scale-bar>
+      
+      <arcgis-expand close-on-esc position="top-right"  mode="floating" collapse-tooltip="Basemap Gallery">
+           <arcgis-basemap-gallery id="baseMap" position="top-right" collapsed="true"></arcgis-basemap-gallery>
+      </arcgis-expand>
+
+      <arcgis-sketch position="bottom-right" creation-mode="continuous" layout="horizontal"></arcgis-sketch>
+
+      <arcgis-area-measurement-2d position="bottom-left"></arcgis-area-measurement-2d>
+    </arcgis-map>
     <script type="module" src="/main.js"></script>
   </body>
-
 </html>

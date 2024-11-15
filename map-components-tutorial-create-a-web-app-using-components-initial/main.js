@@ -1,74 +1,114 @@
-import "./style.css";
 
-import "@arcgis/map-components/dist/components/arcgis-layer-list";
-import "@arcgis/map-components/dist/components/arcgis-map";
-import "@esri/calcite-components/dist/components/calcite-navigation";
-import "@esri/calcite-components/dist/components/calcite-navigation-logo";
-import "@esri/calcite-components/dist/components/calcite-shell";
 
-import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
-import TileLayer from "@arcgis/core/layers/TileLayer";
-import ImageryLayer from "@arcgis/core/layers/ImageryLayer";
-import { setAssetPath } from "@esri/calcite-components/dist/components";
+import "./style.css"
+//import FeatureLayer from "@arcgis/core/layers/FeatureLayer"
 
-// Set asset path for Calcite components
-setAssetPath("https://js.arcgis.com/calcite-components/2.11.1/assets");
+require(["esri/layers/FeatureLayer", "esri/layers/ImageryLayer", "esri/layers/MapImageLayer"], (FeatureLayer, ImageryLayer, MapImageLayer) => {
 
-// Get a reference to the arcgis-layer-list element
-const arcgisLayerList = document.querySelector("arcgis-layer-list");
+  const Cities = new FeatureLayer({
+    url: "http://localhost:3000/arcgis-proxy/arcgis/rest/services/Iran/shp_data/MapServer/0",
+    visible: true
+    });
 
-// Set the listItemCreatedFunction to add a legend to each list item
-arcgisLayerList.listItemCreatedFunction = (event) => {
-  const { item } = event;
-  if (item.layer.type !== "group") {
-    item.panel = {
-      content: "legend"
-    };
-  }
-};
+  const Ostan = new FeatureLayer({
+      url: "http://localhost:3000/arcgis-proxy/arcgis/rest/services/Iran/shp_data/MapServer/1",
+      visible: true
+      });
+  
+  const Shahrestan = new FeatureLayer({
+        url: "http://localhost:3000/arcgis-proxy/arcgis/rest/services/Iran/shp_data/MapServer/2",
+        visible: true
+        });
 
-// Get a reference to the arcgis-map element
+ const Iran = new FeatureLayer({
+          url: "http://localhost:3000/arcgis-proxy/arcgis/rest/services/Iran/shp_data/MapServer/3",
+          visible: true
+          });
+
+
+ //const IranDem = new ImageryLayer({
+ // url:"http://localhost:3000/arcgis-proxy/arcgis/rest/services/Iran/Dem30m_mapservice/MapServer/0",
+  //visible:true
+ //});
+
+ const IranDem = new MapImageLayer({
+  url:"http://localhost:3000/arcgis-proxy/arcgis/rest/services/Iran/Iran_DEM_30s/ImageServer",
+  visible:true
+ });
+
+
 const arcgisMap = document.querySelector("arcgis-map");
 
-// Event listener for when the map's view is ready
-arcgisMap.addEventListener("arcgisViewReadyChange", () => {
-  const { portalItem } = arcgisMap.map;
-  const navigationLogo = document.querySelector("calcite-navigation-logo");
-  navigationLogo.heading = portalItem.title;
-  navigationLogo.description = portalItem.snippet;
-  navigationLogo.thumbnail = portalItem.thumbnailUrl;
+const arcgisLayerList = document.querySelector("arcgis-layer-list");
 
+  arcgisMap.addEventListener("arcgisViewReadyChange", (event) => {
+  //arcgisLayerList
+  arcgisMap.addLayers([Cities,Iran,Ostan,Shahrestan,IranDem]);
+  
+  });
+
+  
+  arcgisLayerList.listItemCreatedFunction = (event) => {
  
-    // Create the Trailheads feature layer
-    const trailheadsLayer = new FeatureLayer({
-      url: "https://services3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/Trailheads/FeatureServer/0"
-    });
+    const { item } = event;
+   
+    // Add a calcite slider for updating opacity on group layers.
+    
+      const label = document.createElement("calcite-label");
+      label.innerText = "Opacity";
+      label.scale = "s";
 
-    // Add the feature layer to the map
-    arcgisMap.map.add(trailheadsLayer);
+      const slider = document.createElement("calcite-slider");
+      slider.labelHandles = true;
+      slider.labelTicks = true;
+      slider.min = 0;
+      slider.minLabel = "0";
+      slider.max = 1;
+      slider.maxLabel = "1";
+      slider.scale = "s";
+      slider.step = 0.01;
+      slider.value = 1;
+      slider.ticks = 0.5;
 
-  // Create the Trailheads feature layer
-     const Cities = new FeatureLayer({
-      url: "http://localhost:3000/arcgis-proxy/arcgis/rest/services/Iran/shp_data/MapServer/0"
-    });
+      slider.addEventListener("calciteSliderChange", () => {
+        item.layer.opacity = slider.value;
+      });
 
-    // Add the feature layer to the map
-    arcgisMap.map.add(Cities);
+      label.appendChild(slider);
 
-     // Create the Trailheads feature layer
-     const Shahrestan = new FeatureLayer({
-      url: "http://localhost:3000/arcgis-proxy/arcgis/rest/services/Iran/shp_data/MapServer/1"
-    });
+      item.panel = {
+        content: label,
+        icon: "sliders-horizontal",
+        title: "Change layer opacity"
+      };
+    }
 
-    // Add the feature layer to the map
-    arcgisMap.map.add(Shahrestan);
-
-      // Create and add the tile layer for Iran GeoIranTile
   
 
-  // Create and add the imagery layer for Iran DEM
-  const iranDEMImageryLayer = new ImageryLayer({
-    url: "https://localhost:6443/arcgis/rest/services/Iran/Iran_DEM_30s/ImageServer"
-  });
-  arcgisMap.map.add(iranDEMImageryLayer);
+  // Event listener that fires each time an action is triggered
+  arcgisLayerList.addEventListener("arcgisTriggerAction", (event) => {
+    // The layer visible in the view at the time of the trigger.
+    const visibleLayer = Ostan.visible ? Ostan : Iran;
+
+    // Get a reference to the action id.
+    const { id } = event.detail.action;
+
+    // If the full-extent action is triggered then navigate
+    // to the full extent of the visible layer
+    if (id === "full-extent") {
+      arcgisMap?.goTo(visibleLayer.fullExtent).catch((error) => {
+        if (error.name != "AbortError") {
+          console.error(error);
+        }
+      });
+    }
+
+    // If the information action is triggered, then
+    // open the item details page of the service layer
+    if (id === "information") {
+      window.open(visibleLayer.url);
+    }
+ 
+ });
+
 });
